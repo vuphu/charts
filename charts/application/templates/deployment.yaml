@@ -5,6 +5,11 @@ metadata:
 spec:
   revisionHistoryLimit: 1
   replicas: {{ .Values.deployment.replicas }}
+  {{- if .Values.deployment.volumes }}
+  # ReadWriteOnce volumes can't be shared by old and new pods during a rolling update.
+  strategy:
+    type: Recreate
+  {{- end }}
   selector:
     matchLabels:
       app: {{ .Values.name }}
@@ -33,3 +38,18 @@ spec:
                   key: {{ .secret.key }}
               {{- end }}
             {{- end }}
+          {{- with .Values.deployment.volumes }}
+          volumeMounts:
+            {{- range . }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+            {{- end }}
+          {{- end }}
+      {{- with .Values.deployment.volumes }}
+      volumes:
+        {{- range . }}
+        - name: {{ .name }}
+          persistentVolumeClaim:
+            claimName: {{ $.Values.name }}-{{ .name }}
+        {{- end }}
+      {{- end }}
