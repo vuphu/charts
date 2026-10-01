@@ -7,7 +7,7 @@ on:
 
 jobs:
   publish:
-    uses: ./.github/workflows/publish-chart.yaml@main
+    uses: ./.github/workflows/publish-chart.yaml
     with:
       chart_name: application
       chart_path: charts/application
