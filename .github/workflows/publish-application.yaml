@@ -1,0 +1,16 @@
+name: Publish application
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  publish:
+    uses: ./.github/workflows/publish-chart.yaml@main
+    with:
+      chart_name: application
+      chart_path: charts/application
+    permissions:
+      contents: read
+      packages: write

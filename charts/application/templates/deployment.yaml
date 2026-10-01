@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+spec:
+  revisionHistoryLimit: 1
+  replicas: {{ .Values.deployment.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Values.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.name }}
+    spec:
+      {{- with .Values.deployment.ips }}
+      imagePullSecrets:
+        - name: {{ . }}
+      {{- end }}
+      containers:
+        - name: {{ .Values.name }}
+          image: {{ .Values.deployment.container.package }}:{{ .Values.deployment.container.tag }}
+          imagePullPolicy: IfNotPresent
+          env:
+            {{- range .Values.deployment.env }}
+            - name: {{ .name }}
+              {{- if .value }}
+              value: {{ .value | quote }}
+              {{- else if .secret }}
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .secret.store }}
+                  key: {{ .secret.key }}
+              {{- end }}
+            {{- end }}

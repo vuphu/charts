@@ -1,0 +1,78 @@
+name: Publish Chart
+
+on:
+  workflow_call:
+    inputs:
+      chart_name:
+        type: string
+        description: "The Helm chart name"
+        required: true
+      chart_path:
+        type: string
+        description: "Path to the directory containing Chart.yaml"
+        required: true
+      registry:
+        type: string
+        description: "OCI registry hostname"
+        required: false
+        default: "ghcr.io"
+      registry_image:
+        type: string
+        description: "OCI repository path, without the registry hostname"
+        required: false
+        default: ""
+    secrets:
+      registry_username:
+        description: "Registry username; defaults to github.actor"
+        required: false
+      registry_token:
+        description: "Registry token; defaults to github.token"
+        required: false
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish-chart:
+    runs-on: ubuntu-latest
+    env:
+      CHART_NAME: ${{ inputs.chart_name }}
+      CHART_PATH: ${{ inputs.chart_path }}
+      REGISTRY: ${{ inputs.registry }}
+      REGISTRY_IMAGE: ${{ inputs.registry_image || github.repository }}
+      REGISTRY_USERNAME: ${{ secrets.registry_username || github.actor }}
+      REGISTRY_TOKEN: ${{ secrets.registry_token || github.token }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.18.3
+
+      - name: Log in to OCI registry
+        run: echo "$REGISTRY_TOKEN" | helm registry login --username "$REGISTRY_USERNAME" --password-stdin "$REGISTRY"
+
+      - name: Package and publish chart
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          CHART_VERSION=$(sed -n 's/^version:[[:space:]]*//p' "$CHART_PATH/Chart.yaml" | head -n 1 | xargs)
+          if [[ -z "$CHART_VERSION" ]]; then
+            echo "Unable to read chart version from $CHART_PATH/Chart.yaml" >&2
+            exit 1
+          fi
+
+          CHART_PACKAGE_NAME="${CHART_NAME}-${CHART_VERSION}.tgz"
+          OCI_TARGET="oci://${REGISTRY}/${REGISTRY_IMAGE}"
+
+          if helm show chart "${OCI_TARGET}/${CHART_NAME}" --version "$CHART_VERSION" > /dev/null 2>&1; then
+            echo "Chart ${CHART_NAME}:${CHART_VERSION} already exists in ${OCI_TARGET}. Skipping push."
+          else
+            helm package "$CHART_PATH" --version "$CHART_VERSION" --destination .
+            helm push "$CHART_PACKAGE_NAME" "$OCI_TARGET"
+          fi
