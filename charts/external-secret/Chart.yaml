@@ -1,0 +1,5 @@
+apiVersion: v2
+name: external-secret
+description: Creates a provider-agnostic SecretStore and ExternalSecret
+type: application
+version: 1.0.0

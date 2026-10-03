@@ -1,0 +1,21 @@
+## Namespace where the ExternalSecret and SecretStore are created.
+## Leave empty to use the Helm release namespace.
+namespace: ""
+
+name: external-secrets
+secretStoreName: external-secrets-store
+## Name of the Kubernetes Secret created by External Secrets. Required.
+targetName: ""
+
+refreshPolicy: OnChange
+refreshInterval: "0"
+
+## External Secrets provider configuration. The object is rendered as-is.
+## Required. Configure this value from the parent chart.
+provider: {}
+
+## List of remote secret keys.
+## Required.
+## Examples:
+##   - /application/database/url
+secrets: []
