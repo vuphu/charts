@@ -8,4 +8,5 @@ Each chart keeps its usage and configuration guide in its own directory.
 
 | Chart | Description | Guide |
 | --- | --- | --- |
-| `application` | Generic `Deployment` and `Service` for a single containerized application | [Documentation](charts/application/README.md) |
+| `application` | Deploy applications on Kubernetes | [Documentation](charts/application/README.md) |
+| `external-secret` | Synchronize external secrets into Kubernetes | [Documentation](charts/external-secret/README.md) |

@@ -1,6 +1,6 @@
 # application
 
-This chart deploys a single containerized application as a Kubernetes `Deployment` and exposes it with a `Service`, with optional `PersistentVolumeClaim`s for state.
+This chart deploys an application as a Kubernetes `Deployment`, exposes it with a `Service`, and optionally provisions `PersistentVolumeClaim`s for state.
 
 Both resources use `name` as their name and the `app: <name>` label connects the Service to the Deployment's pods.
 
