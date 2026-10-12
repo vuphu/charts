@@ -1,0 +1,35 @@
+## Name used for the Deployment, Service, container, and app label.
+name: my-app
+
+replicas: 1
+
+## Required: set image.package and image.tag in your override values.
+image:
+  package: ""
+  tag: ""
+  ## Image pull secret name; leave empty for public images.
+  pullSecret: ""
+
+## Environment variables with either a literal value or a Secret reference.
+## Examples:
+##   - name: LOG_LEVEL
+##     value: info
+##   - name: DATABASE_URL
+##     secret:
+##       store: my-app-secrets
+##       key: database-url
+env: []
+
+## Persistent volumes. Each entry creates and mounts a ReadWriteOnce PVC.
+## Setting volumes enables the Recreate deployment strategy.
+## Claims are retained when the release is uninstalled.
+## Example:
+##   - name: data
+##     mountPath: /data
+##     size: 1Gi
+##     storageClass: local-path # Optional; uses the cluster default when omitted.
+volumes: []
+
+service:
+  port: 80
+  targetPort: 80

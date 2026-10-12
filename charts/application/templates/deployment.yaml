@@ -4,8 +4,8 @@ metadata:
   name: {{ .Values.name }}
 spec:
   revisionHistoryLimit: 1
-  replicas: {{ .Values.deployment.replicas }}
-  {{- if .Values.deployment.volumes }}
+  replicas: {{ .Values.replicas }}
+  {{- if .Values.volumes }}
   # ReadWriteOnce volumes can't be shared by old and new pods during a rolling update.
   strategy:
     type: Recreate
@@ -18,18 +18,19 @@ spec:
       labels:
         app: {{ .Values.name }}
     spec:
-      {{- with .Values.deployment.ips }}
+      {{- with .Values.image.pullSecret }}
       imagePullSecrets:
         - name: {{ . }}
       {{- end }}
       containers:
         - name: {{ .Values.name }}
-          image: {{ .Values.deployment.container.package }}:{{ .Values.deployment.container.tag }}
+          image: {{ required "image.package is required" .Values.image.package }}:{{ required "image.tag is required" .Values.image.tag }}
           imagePullPolicy: IfNotPresent
+          {{- with .Values.env }}
           env:
-            {{- range .Values.deployment.env }}
+            {{- range . }}
             - name: {{ .name }}
-              {{- if .value }}
+              {{- if hasKey . "value" }}
               value: {{ .value | quote }}
               {{- else if .secret }}
               valueFrom:
@@ -38,14 +39,15 @@ spec:
                   key: {{ .secret.key }}
               {{- end }}
             {{- end }}
-          {{- with .Values.deployment.volumes }}
+          {{- end }}
+          {{- with .Values.volumes }}
           volumeMounts:
             {{- range . }}
             - name: {{ .name }}
               mountPath: {{ .mountPath }}
             {{- end }}
           {{- end }}
-      {{- with .Values.deployment.volumes }}
+      {{- with .Values.volumes }}
       volumes:
         {{- range . }}
         - name: {{ .name }}
