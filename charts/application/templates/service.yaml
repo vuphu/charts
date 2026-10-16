@@ -6,6 +6,9 @@ spec:
   selector:
     app: {{ .Values.name }}
   ports:
-    - protocol: TCP
-      port: {{ .Values.service.port }}
-      targetPort: {{ .Values.service.targetPort }}
+    {{- range $index, $port := required "service.ports must contain at least one port" .Values.service.ports }}
+    - name: {{ default (printf "port-%d" $index) $port.name | quote }}
+      protocol: {{ default "TCP" $port.protocol }}
+      port: {{ $port.port }}
+      targetPort: {{ default $port.port $port.targetPort }}
+    {{- end }}

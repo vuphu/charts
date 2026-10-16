@@ -15,8 +15,24 @@ Both resources use `name` as their name and the `app: <name>` label connects the
 | `image.tag` | Required container image tag |
 | `env` | List of environment variables |
 | `volumes` | List of persistent volumes to mount; omit when the application is stateless |
-| `service.port` | Port exposed by the Service |
-| `service.targetPort` | Container port to which the Service forwards traffic |
+| `service.ports` | Non-empty list of port bindings; defaults to port 80 |
+
+To expose multiple ports, set `service.ports`:
+
+```yaml
+service:
+  ports:
+    - name: http
+      port: 80
+      targetPort: 8080
+    - name: metrics
+      port: 9090
+    - name: dns
+      port: 53
+      protocol: UDP
+```
+
+Each entry requires `port`. The optional `targetPort` defaults to `port`, `protocol` defaults to `TCP`, and `name` defaults to `port-<zero-based index>`. Use unique names for all entries. Target ports should be numeric container ports. At least one entry is required.
 
 Each `env` entry can contain either a literal `value` or a `secret` reference:
 
@@ -61,10 +77,15 @@ env:
     value: "8080"
 
 service:
-  port: 80
-  targetPort: 8080
+  ports:
+    - port: 80
+      targetPort: 8080
 ```
+
+## Migrating from 2.0.x
+
+Version 2.1.0 replaces `service.port` and `service.targetPort` with `service.ports`. Move the existing port values into an entry in this list, as shown above.
 
 ## Migrating from 1.x
 
-Version 2.0.0 removes the `deployment` wrapper. Move `replicas`, `env`, and `volumes` to the root, rename `deployment.ips` to `image.pullSecret`, and replace `deployment.container.package` / `deployment.container.tag` with `image.package` / `image.tag`. The `service` values keep their existing structure.
+Version 2.0.0 removes the `deployment` wrapper. Move `replicas`, `env`, and `volumes` to the root, rename `deployment.ips` to `image.pullSecret`, and replace `deployment.container.package` / `deployment.container.tag` with `image.package` / `image.tag`. When upgrading to 2.1.0 or later, also migrate the Service ports as described above.

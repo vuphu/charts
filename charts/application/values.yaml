@@ -31,5 +31,16 @@ env: []
 volumes: []
 
 service:
-  port: 80
-  targetPort: 80
+  ## Service port bindings; at least one entry is required.
+  ## Each name defaults to port-<index>, targetPort to port, and protocol to TCP.
+  ## Example:
+  ##   - name: http
+  ##     port: 80
+  ##     targetPort: 8080
+  ##   - name: metrics
+  ##     port: 9090
+  ##   - name: dns
+  ##     port: 53
+  ##     protocol: UDP
+  ports:
+    - port: 80
